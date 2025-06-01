@@ -1,2 +1,2 @@
-# telecom-mc
-Telecom Mission Control SaaS Platform
+# ent-mission-ctrl
+Mission Control SaaS Platform for Enterprises
