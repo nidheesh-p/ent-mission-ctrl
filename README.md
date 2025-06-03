@@ -17,7 +17,7 @@ This document outlines the requirements and architecture for a Mission Control S
 | Creator             | Nidheesh Puthalath                         |
 | Reviewer            | Bharath Pasupuleti                         |
 | Created Date        | 06/02/2025                                 |
-| Current State       | Draft                                      |
+| Current State       | Review                                     |
 
 **Current State Definitions**
 - **Draft**: Initial version, under development.
@@ -40,52 +40,52 @@ Organizations subscribing to the platform to manage and secure mobile connectivi
 - Enterprise Admins
 - Security Engineers/Analysts
 - Onsite Technicians
-- Auditors (optional)
+- Auditors
 
 **2. Telecom Infrastructure Providers / Carriers**  
-Stakeholders operating towers and providing device connectivity data. Integration is backend-to-backend (no UI in initial version).
+Stakeholders operating towers and providing device connectivity data. The integration with carriers is primarily through backend-to-backend. There is no Admin UI planned in the initial version which is considered to be a nice-to-have.
 
 **3. Platform Internal Users**
-Internal support users including:
-- Customer Support / Account Managers
-- Internal Admins
+These are internal users who are responsible for on-boarding new enterprise clients, provide support and be the point-of-contact for the enterprises. Some roles supported by the system for the internal users are -
+- Customer Support/Account Managers
+- Internal Admin
 
 ---
 
 ## 4. Functional Requirements
 
 ### For Enterprise Clients:
-- Device Management
-- Application & Action Monitoring
-- Policy Enforcement
-- Real-Time Security Dashboard
-- Auto-Remedial Actions
-- Tower Registration Integration
-- User/Device Onboarding
-- Auto-Discovery of Devices
-- Internationalization Support
+- Device Management: Tracking and management of devices and their operating systems (iOS, Android, Windows, etc.)
+- Application & Action Monitoring: Detection of app usage and user actions on devices via cell tower equipment.
+- Policy Enforcement: Application of enterprise-defined policies to allow or deny actions on apps based on user roles.
+- Real-Time Security Dashboard:  Provide a real-time dashboard to monitor security health. This provides access to live insights on device health, policy enforcement, and security status.
+- Auto-Remedial Actions: Higher subscription plans should offer auto-remedial actions enforced at cell towers.
+- Tower Registration Integration: Integrate with communication real estate developers to ingest tower and carrier information.
+- User/Device Onboarding: Support onboarding of existing users and devices from various sources.
+- Auto-Discovery of Devices: Enable auto-discovery of new enterprise devices through cell towers.
+- Internationalization Support: System should support translation of content on the UI.
 
 ### For Telecom Infrastructure Providers:
-- Multi-Carrier Support
-- Tower Metadata Registration
-- App Usage Telemetry Forwarding
+- Multi-Carrier Support: System must understand and respect each tower carrier and device compatibility.
+- Tower Registration: Provide tower metadata (location, capabilities, supported OS/carriers).
+- App Usage Data Feed: Forward app and usage telemetry from tower equipment to the system.
 
 ### For Platform Internal Users:
-- Admin Controls
-- Audit Logs
-- Platform Health Dashboard
+- Admin Controls: Add/update/delete policies, help enterprises with setup/troubleshooting.
+- Audit Logs: Monitor rule enforcement across enterprises.
+- Platform Health Dashboard: Track platform-wide health, error rates, and performance.
 
 ---
 
 ## 5. Non-Functional Requirements
-
-- **High Assurance**: Secure, enterprise-isolated data
-- **Accessibility**: WCAG-compliant UIs
-- **Performance**: Real-time ingestion from telecom edge
-- **Scalability**: Support for large-scale device/user footprint
-- **Cross-Platform**: Web + mobile
+Non-functional requirements of the platform which should be satisfied across all user personas
+- **High Assurance**: Data isolation per enterprise, secure policy and device operations. This also ensures that the data shared by the telecom provider is securely handled, and privacy boundaries are respected.
+- **Accessibility**: Interfaces usable by all enterprise staff, including those having accessibility challenges. ie. WCAG-compliant UIs
+- **Performance**: Ingest app usage and device data at scale without lag from telecom providers to the platform and to the end enterprise clients.
+- **Scalability**: Support hundreds(?) of enterprises and their device/user footprint.
+- **Cross-Platform and form-factors**: Web, mobile and tablets of different real-estate
 - **Offline Support**: Especially for field technicians
-- **Global Availability**: Resilient across regions
+- **Global Availability**: Highly available across different regions.
 
 ---
 
@@ -96,16 +96,17 @@ Internal support users including:
 
 ### 6.2 Frontend Architecture
 ![Alt Text](https://github.com/nidheesh-p/ent-mission-ctrl/blob/main/ent-mission-ctrl-frontend.jpg)
-Key modules include:
 
-- **Entry Point**: `App.tsx` - bootstraps the application with global providers
-- **Layout UI**: Navbars, Modals, Tooltips, Keyboard/ARIA support
+Frontend Key Components:
+
+- **Entry Point**: `App.tsx` - bootstraps the application
+- **Layout UI**: Navbars, Modals, Keyboard/ARIA support
 - **Route Layer**: Role-based + private routing
-- **Feature Modules**: `/devices`, `/policies`, etc.
+- **Feature Modules**: `/devices`, `/policies`, etc. (Lazy-load feature modules)
 - **Redux Store**: Global state with slices like `auth`, `deviceSlice`, etc.
-- **Utils**: i18n, validation
+- **Utils**: i18n, validation, constants etc.
 - **UI Library**: Design system for reusable styled components
-- **Data Layer**: RTK Query, REST API, local storage
+- **Data Layer**: RTK Query, REST API, redux offline storage
 
 ---
 
@@ -172,10 +173,10 @@ Key modules include:
 
 | Method | Endpoint      | Description            |
 |--------|---------------|------------------------|
-| GET    | /devices      | Get all devices        |
+| GET    | /devices      | Admin to get all devices        |
 | GET    | /devices/:id  | Get specific device    |
-| POST   | /devices      | Register new device    |
-| PATCH  | /devices/:id  | Update device          |
+| POST   | /devices      | Register a new device    |
+| PATCH  | /devices/:id  | Update the device details          |
 | DELETE | /devices/:id  | Delete device          |
 
 ### 8.3 Policy & Tower APIs
@@ -228,6 +229,8 @@ User story:
 
 **Flow:**
 
+User → DevicePage and Device Table Component → RTK Query Hook(useDevices and DeviceService) → API Request(“/devices”) → Response → Redux Store(deviceSlice) → UI Re-render
+
 1. `DevicePage.tsx` mounted
 2. `useDevices()` hook triggers RTK Query `getDevices()`
 3. Sends `GET /devices` API call
@@ -240,6 +243,5 @@ User story:
 
 - Enhanced admin analytics
 - Tower/device diagnostic tools
-- Integration with telecom 5G APIs
 - Improved Rolebased support
 
